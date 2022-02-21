@@ -26,16 +26,16 @@ cbuffer cbuffer0 : register(b0) {
 
 PS_INPUT vs(VS_INPUT input) {
 	float2 pos = input.pos;
+	pos.x *= aspect;
 	float2 uv = input.uv;
 
 	float angle = fmod(uptime / 21.0f, 1.0f) * PI*2.0f;
-
 	float2x2 rot = {
 		aspect*cos(angle), aspect*sin(angle),
 		      -sin(angle),        cos(angle),
 	};
 
-	pos = mul(rot, pos);
+	//pos = mul(rot, pos);
 
 	PS_INPUT output;
 	output.pos = float4(pos, 0.0, 1.0f);
@@ -49,10 +49,12 @@ sampler sampler0 : register(s0);
 Texture2D<float4> texture0 : register(t0);
 
 float4 ps(PS_INPUT input) : SV_TARGET {
-	float4 texel = texture0.Sample(sampler0, input.uv);
+	float4 texel = texture0.Sample(sampler0, input.uv * 5.0f);
 	float4 col = input.col;
 
-	col += texel;
+	col *= texel;
+	//col = float4(floor(input.uv*10.0f)/10.0f, 0.0f, 1.0f);
+	//col = input.pos;
 
 	return col;
 }

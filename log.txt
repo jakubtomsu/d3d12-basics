@@ -1,0 +1,44 @@
+window resized to 704 441
+crated window
+crated d3d12 device
+crated d3d12 swapchain
+crated d3d12 root signature
+crated d3d12 pipeline state object
+crated d3d12 command allocator and command list
+crated d3d12 upload buffer
+crated d3d12 vertex resource
+crated d3d12 texture resource
+crated d3d12 fence
+start program loop
+window resized to 705 442
+window resized to 705 444
+window resized to 698 448
+window resized to 689 453
+window resized to 679 458
+window resized to 667 463
+window resized to 656 464
+window resized to 643 468
+window resized to 631 473
+window resized to 616 475
+window resized to 605 478
+window resized to 594 480
+window resized to 585 484
+window resized to 575 489
+window resized to 566 492
+window resized to 557 497
+window resized to 548 501
+window resized to 541 503
+window resized to 534 507
+window resized to 526 510
+window resized to 520 512
+window resized to 511 517
+window resized to 504 520
+window resized to 498 522
+window resized to 490 527
+window resized to 480 531
+window resized to 474 533
+window resized to 467 536
+window resized to 464 537
+window resized to 458 539
+window resized to 455 541
+window resized to 454 542
