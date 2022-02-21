@@ -1,6 +1,7 @@
 *.pdb
 *.exe
 *.ilk
+log.txt
 
 .vs
 .vscode
