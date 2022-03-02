@@ -33,18 +33,19 @@ typedef struct vertex_t {
 } vertex_t;
 
 static vertex_t vertex_data[] = {
-	{{-0.0f,  0.7f}, {1.5f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}},
-	{{ 0.7f, -0.7f}, {3.0f, 3.0f}, {0.0f, 1.0f, 0.0f, 1.0f}},
-	{{-0.7f, -0.7f}, {0.0f, 3.0f}, {0.0f, 0.0f, 1.0f, 1.0f}},
+	{{-0.0f,+0.7f}, {1.5f,0.0f}, {1.0f,0.0f,0.0f,1.0f}},
+	{{+0.7f,-0.7f}, {3.0f,3.0f}, {0.0f,1.0f,0.0f,1.0f}},
+	{{-0.7f,-0.7f}, {0.0f,3.0f}, {0.0f,0.0f,1.0f,1.0f}},
 };
 
-static uint32_t texture_data[] = {
-	0x20000000, 0x20ffffff,
-	0x20ffffff, 0x20000000,
+#define TEXTURE_DATA_WIDTH 2
+#define TEXTURE_DATA_HEIGHT 2
+static uint32_t texture_data[TEXTURE_DATA_WIDTH*TEXTURE_DATA_HEIGHT] = {
+	0xaaaaaaaa, 0xffffffff,
+	0xffffffff, 0xaaaaaaaa,
 };
-static size_t texture_size[2] = {2, 2};
 
-static float clear_color[] ={0.117f, 0.117f, 0.120f, 1.0f};
+static float clear_color[] ={0.05f, 0.4f, 0.3f, 1.0f};
 static bool vsync_enabled = true;
 
 FILE* debug_log_file;
@@ -89,7 +90,7 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 	// create window
 	HWND window;
 	{
-		WNDCLASSEXW wc = {};
+		WNDCLASSEXW wc = {0};
 		wc.cbSize = sizeof(WNDCLASSEXW);
 		wc.lpfnWndProc = window_proc;
 		wc.hInstance = instance;
@@ -136,7 +137,7 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 		hresult = D3D12CreateDevice(NULL, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
 		ASSERT(SUCCEEDED(hresult));
 
-		D3D12_COMMAND_QUEUE_DESC cmd_queue_desc = {};
+		D3D12_COMMAND_QUEUE_DESC cmd_queue_desc = {0};
 		cmd_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
 		hresult = device->CreateCommandQueue(&cmd_queue_desc, IID_PPV_ARGS(&cmd_queue));
@@ -153,7 +154,7 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 
 		hresult = CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgi));
 
-		DXGI_SWAP_CHAIN_DESC1 swapchain_desc = {};
+		DXGI_SWAP_CHAIN_DESC1 swapchain_desc = {0};
 		swapchain_desc.Width		= 0;
 		swapchain_desc.Height		= 0;
 		swapchain_desc.Format		= DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -183,18 +184,18 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 	{
 		HRESULT hresult;
 
-		D3D12_DESCRIPTOR_RANGE range = {};
+		D3D12_DESCRIPTOR_RANGE range = {0};
 		range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 		range.NumDescriptors = 1;
 		range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-		D3D12_ROOT_PARAMETER table = {};
+		D3D12_ROOT_PARAMETER table = {0};
 		table.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 		table.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 		table.DescriptorTable.NumDescriptorRanges = 1;
 		table.DescriptorTable.pDescriptorRanges = &range;
 
-		D3D12_ROOT_PARAMETER consts = {};
+		D3D12_ROOT_PARAMETER consts = {0};
 		consts.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 		consts.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
 		consts.Constants.Num32BitValues		= 4;
@@ -203,7 +204,7 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 		table_slot = 0;
 		consts_slot = 1;
 
-		D3D12_STATIC_SAMPLER_DESC sampler = {};
+		D3D12_STATIC_SAMPLER_DESC sampler = {0};
 		sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 		sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
 		sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -214,7 +215,7 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 
 
 
-		D3D12_ROOT_SIGNATURE_DESC signature_desc = {};
+		D3D12_ROOT_SIGNATURE_DESC signature_desc = {0};
 		signature_desc.NumParameters		= _countof(params);
 		signature_desc.pParameters		= params;
 		signature_desc.NumStaticSamplers	= _countof(samplers);
@@ -267,11 +268,11 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 		// !!!!!!! DXGI_FORMAT_R32G32_FLOAT
 		D3D12_INPUT_ELEMENT_DESC input_elems[] = {
 			{"POSITION",	0, DXGI_FORMAT_R32G32_FLOAT,		0, offsetof(vertex_t, pos),	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-			{"TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, offsetof(vertex_t, pos),	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-			{"COLOR",	0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, offsetof(vertex_t, pos),	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+			{"TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, offsetof(vertex_t, uv),	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+			{"COLOR",	0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, offsetof(vertex_t, col),	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
 		};
 
-		D3D12_BLEND_DESC blend = {};
+		D3D12_BLEND_DESC blend = {0};
 		blend.RenderTarget[0].BlendEnable = TRUE;
 		blend.RenderTarget[0].SrcBlend  = D3D12_BLEND_SRC_ALPHA;
 		blend.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
@@ -281,15 +282,15 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 		blend.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 		blend.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
-		D3D12_RASTERIZER_DESC rasterizer = {};
+		D3D12_RASTERIZER_DESC rasterizer = {0};
 		rasterizer.FillMode = D3D12_FILL_MODE_SOLID;
 		rasterizer.CullMode = D3D12_CULL_MODE_NONE;
 
-		D3D12_DEPTH_STENCIL_DESC depth_stencil = {};
+		D3D12_DEPTH_STENCIL_DESC depth_stencil = {0};
 		depth_stencil.DepthEnable = FALSE;
 		depth_stencil.StencilEnable = FALSE;
 
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC pipeline_desc = {};
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC pipeline_desc = {0};
 		pipeline_desc.pRootSignature = signature;
 		pipeline_desc.VS = {vs->GetBufferPointer(), vs->GetBufferSize()};
 		pipeline_desc.PS = {ps->GetBufferPointer(), ps->GetBufferSize()};
@@ -344,10 +345,10 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 	{
 		HRESULT hresult;
 
-		D3D12_HEAP_PROPERTIES heap = {};
+		D3D12_HEAP_PROPERTIES heap = {0};
 		heap.Type = D3D12_HEAP_TYPE_UPLOAD;
 
-		D3D12_RESOURCE_DESC buffer = {};
+		D3D12_RESOURCE_DESC buffer = {0};
 		buffer.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
 		buffer.Alignment = 0;
 		buffer.Width = 64*1024;
@@ -381,7 +382,7 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 			// texture data
 			texture_offset = D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT;
 			p += texture_offset;
-			size_t stride = texture_size[0] * sizeof(texture_data[0]);
+			size_t stride = TEXTURE_DATA_WIDTH * sizeof(texture_data[0]);
 			for(size_t i = 0; i < sizeof(texture_data); i += stride) {
 				memcpy(p, (uint8_t*)texture_data + i, stride);
 				p += D3D12_TEXTURE_DATA_PITCH_ALIGNMENT;
@@ -397,10 +398,10 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 	{
 		HRESULT hresult;
 
-		D3D12_HEAP_PROPERTIES heap = {};
+		D3D12_HEAP_PROPERTIES heap = {0};
 		heap.Type = D3D12_HEAP_TYPE_DEFAULT;
 
-		D3D12_RESOURCE_DESC buffer = {};
+		D3D12_RESOURCE_DESC buffer = {0};
 		buffer.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
 		buffer.Alignment = 0;
 		buffer.Width = sizeof(vertex_data);
@@ -434,14 +435,14 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 	{
 		HRESULT hresult;
 
-		D3D12_HEAP_PROPERTIES heap = {};
+		D3D12_HEAP_PROPERTIES heap = {0};
 		heap.Type = D3D12_HEAP_TYPE_DEFAULT;
 
-		D3D12_RESOURCE_DESC texture = {};
+		D3D12_RESOURCE_DESC texture = {0};
 		texture.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 		texture.Alignment = 0;
-		texture.Width = (UINT)texture_size[0];
-		texture.Height = (UINT)texture_size[1];
+		texture.Width = (UINT)TEXTURE_DATA_WIDTH;
+		texture.Height = (UINT)TEXTURE_DATA_HEIGHT;
 		texture.DepthOrArraySize = 1;
 		texture.MipLevels = 1;
 		texture.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -459,7 +460,7 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 		);
 		ASSERT(SUCCEEDED(hresult));
 
-		D3D12_DESCRIPTOR_HEAP_DESC srv_heap_desc = {};
+		D3D12_DESCRIPTOR_HEAP_DESC srv_heap_desc = {0};
 		srv_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 		srv_heap_desc.NumDescriptors = 1;
 		srv_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
@@ -560,7 +561,7 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 			);
 			ASSERT(SUCCEEDED(hresult));
 
-			D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_desc = {};
+			D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_desc = {0};
 			rtv_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 			rtv_heap_desc.NumDescriptors = buffer_count;
 
@@ -603,7 +604,7 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 					sizeof(vertex_data)
 				);
 
-				D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint = {};
+				D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint = {0};
 
 				device->GetCopyableFootprints(
 					&texture_resource->GetDesc(),
@@ -616,12 +617,12 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 					NULL
 				);
 
-				D3D12_TEXTURE_COPY_LOCATION src = {};
+				D3D12_TEXTURE_COPY_LOCATION src = {0};
 				src.pResource = upload_buffer;
 				src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
 				src.PlacedFootprint = footprint;
 
-				D3D12_TEXTURE_COPY_LOCATION dst = {};
+				D3D12_TEXTURE_COPY_LOCATION dst = {0};
 				dst.pResource = texture_resource;
 				dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 				dst.SubresourceIndex = 0;
@@ -630,14 +631,14 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 
 				
 
-				D3D12_RESOURCE_BARRIER vb = {};
+				D3D12_RESOURCE_BARRIER vb = {0};
 				vb.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 				vb.Transition.pResource = vertex_resource;
 				vb.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 				vb.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
 				vb.Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
 
-				D3D12_RESOURCE_BARRIER tex = {};
+				D3D12_RESOURCE_BARRIER tex = {0};
 				tex.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 				tex.Transition.pResource = texture_resource;
 				tex.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
@@ -665,11 +666,11 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 			};
 			cmd_list->SetGraphicsRoot32BitConstants(consts_slot, _countof(consts), consts, 0);
 
-			D3D12_VIEWPORT viewport = {};
+			D3D12_VIEWPORT viewport = {0};
 			viewport.Width = (float)window_width;
 			viewport.Height = (float)window_height;
 
-			D3D12_RECT scissor = {};
+			D3D12_RECT scissor = {0};
 			scissor.right = (ULONG)window_width;
 			scissor.bottom = (ULONG)window_height;
 
@@ -678,7 +679,7 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 
 			UINT render_target_index = swapchain->GetCurrentBackBufferIndex();
 
-			D3D12_RESOURCE_BARRIER rt = {};
+			D3D12_RESOURCE_BARRIER rt = {0};
 			rt.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 			rt.Transition.pResource = render_targets[render_target_index];
 			rt.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
