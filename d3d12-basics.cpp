@@ -102,6 +102,7 @@ window_proc(HWND window, UINT message, WPARAM wp, LPARAM lp) {
 		window_height = HIWORD(lp);
 		window_aspect = (float)window_width / (float)window_height;
 		DEBUGLOG("window resized to %i %i", window_width, window_height);
+		window_resized = true;
 	} break;
 
 	case WM_DESTROY: {
@@ -590,8 +591,6 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 
 		// fill command lists
 		{
-			HRESULT hresult;
-
 			hresult = cmd_alloc->Reset();
 			ASSERT(SUCCEEDED(hresult));
 
@@ -713,8 +712,6 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 
 		// render
 		{
-			HRESULT hresult;
-
 			cmd_queue->ExecuteCommandLists(1, (ID3D12CommandList**)&cmd_list);
 
 			hresult = swapchain->Present(vsync_enabled ? 1 : 0, 0);
@@ -723,8 +720,6 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 
 		// wait to finish
 		{
-			HRESULT hresult;
-
 			hresult = cmd_queue->Signal(fence, fence_val);
 			ASSERT(SUCCEEDED(hresult));
 
@@ -739,6 +734,32 @@ WinMain(HINSTANCE instance, HINSTANCE instance_p, LPSTR cmd_line, int cmd_show) 
 		}
 	}
 	main_loop_end:
+
+
+	// clean up
+
+	for (UINT i = 0; i < buffer_count; i++) {
+		render_targets[i]->Release();
+	}
+	rtv_heap->Release();
+
+	CloseHandle(fence_event);
+	fence->Release();
+
+	srv_heap->Release();
+	texture_resource->Release();
+	vertex_resource->Release();
+	upload_buffer->Release();
+
+	cmd_list->Release();
+	cmd_alloc->Release();
+	pipeline->Release();
+	signature->Release();
+	swapchain->Release();
+	cmd_queue->Release();
+	device->Release();
+
+	DEBUGLOG("cleanup sucessful");
 
 	return 0;
 }
