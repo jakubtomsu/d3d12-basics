@@ -27,6 +27,12 @@ PS_INPUT vs(VS_INPUT input) {
 	float2 pos = input.pos;
 	float2 uv = input.uv * 10.0f;
 
+	float2 rot_dir = float2(cos(uptime), sin(uptime));
+	float2x2 rot = float2x2(rot_dir, float2(rot_dir.y, -rot_dir.x));
+
+	pos = mul(rot, pos);
+	pos.x /= aspect;
+
 	PS_INPUT output;
 	output.pos = float4(pos, 0.0, 1.0f);
 	output.uv = uv;
